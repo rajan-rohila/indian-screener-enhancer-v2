@@ -13,10 +13,13 @@ import MoonIcon from "./assets/icons/MoonIcon";
 import "./App.css";
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const [navOpen, setNavOpen] = useState(true);
+
+  // Apply dark mode on initial render
+  useState(() => applyMode(Mode.Dark));
 
   const handleToggleTheme = () => {
     const newMode = !darkMode;
