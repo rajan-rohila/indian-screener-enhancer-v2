@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   SideNavigation,
+  Header,
   Container,
   Tabs,
   Table,
@@ -235,6 +236,11 @@ export default function Screener() {
                   setSortingColumn(detail.sortingColumn);
                   setSortingDescending(detail.isDescending ?? false);
                 }}
+                header={
+                  <Header variant="h2">
+                    {String(sortedData.length).padStart(2, "\u00A0")}
+                  </Header>
+                }
                 empty={
                   <Box textAlign="center" color="inherit">
                     {error ? (
