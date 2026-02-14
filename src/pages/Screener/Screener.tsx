@@ -157,7 +157,7 @@ export default function Screener() {
         setActiveHref(`#${allGroupKeys[nextIndex]}`);
       } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
-        const allTabs = ["all", ...industryKeys];
+        const allTabs = ["all", ...sortedIndustryKeys];
         const currentIndex = allTabs.indexOf(selectedTab);
         if (currentIndex === -1) return;
         const nextIndex =
@@ -188,13 +188,21 @@ export default function Screener() {
     return sortingDescending ? sorted.reverse() : sorted;
   }, [filteredData, sortingColumn, sortingDescending]);
 
+  const sortedIndustryKeys = useMemo(() => {
+    return [...industryKeys].sort((a, b) => {
+      const countA = data.filter((d) => getSubIndustryNames(activeKey, a).includes(d.name)).length;
+      const countB = data.filter((d) => getSubIndustryNames(activeKey, b).includes(d.name)).length;
+      return countB - countA;
+    });
+  }, [industryKeys, data, activeKey]);
+
   const tabItems = [
     {
       id: "all",
       label: `All ${INDUSTRY_GROUPS[activeKey]}`,
       content: null,
     },
-    ...industryKeys.map((key) => ({
+    ...sortedIndustryKeys.map((key) => ({
       id: key,
       label: INDUSTRIES[key],
       content: null,
