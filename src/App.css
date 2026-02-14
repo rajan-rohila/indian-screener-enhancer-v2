@@ -21,14 +21,15 @@
 
 /* Dark mode header */
 .awsui-dark-mode #h [class*="top-navigation"] {
-  background-color: #0f1b2a;
-  color: #d1d5db;
+  background-color: #161D26;
+  color: #ffffff;
+  border-bottom: 0.5px solid #424650;
 }
 
 .awsui-dark-mode #h [class*="top-navigation"] a,
 .awsui-dark-mode #h [class*="top-navigation"] button,
 .awsui-dark-mode #h [class*="top-navigation"] span,
 .awsui-dark-mode #h [class*="top-navigation"] svg {
-  color: #d1d5db;
-  fill: #d1d5db;
+  color: #ffffff;
+  fill: #ffffff;
 }
