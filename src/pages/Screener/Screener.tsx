@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   SideNavigation,
-  Header,
   Container,
   Tabs,
   Table,
@@ -62,18 +61,25 @@ const COLUMN_DEFINITIONS: TableProps.ColumnDefinition<IndustryData>[] = [
     sortingComparator: (a, b) => a.companies - b.companies,
   },
   {
-    id: "marketCap",
-    sortingField: "marketCap",
-    header: "Market Cap",
-    cell: (item) => item.marketCap,
-    sortingComparator: (a, b) => (parseNum(a.marketCap) ?? 0) - (parseNum(b.marketCap) ?? 0),
-  },
-  {
     id: "pe",
     sortingField: "pe",
     header: "P/E",
     cell: (item) => item.pe,
     sortingComparator: (a, b) => (parseNum(a.pe) ?? 0) - (parseNum(b.pe) ?? 0),
+  },
+  {
+    id: "return1y",
+    sortingField: "return1y",
+    header: "1Y Return",
+    cell: (item) => <ValueCell value={item.return1y} />,
+    sortingComparator: (a, b) => (parseNum(a.return1y) ?? 0) - (parseNum(b.return1y) ?? 0),
+  },
+  {
+    id: "marketCap",
+    sortingField: "marketCap",
+    header: "Market Cap",
+    cell: (item) => item.marketCap,
+    sortingComparator: (a, b) => (parseNum(a.marketCap) ?? 0) - (parseNum(b.marketCap) ?? 0),
   },
   {
     id: "salesGrowth",
@@ -95,13 +101,6 @@ const COLUMN_DEFINITIONS: TableProps.ColumnDefinition<IndustryData>[] = [
     header: "ROCE",
     cell: (item) => <ValueCell value={item.roce} />,
     sortingComparator: (a, b) => (parseNum(a.roce) ?? 0) - (parseNum(b.roce) ?? 0),
-  },
-  {
-    id: "return1y",
-    sortingField: "return1y",
-    header: "1Y Return",
-    cell: (item) => <ValueCell value={item.return1y} />,
-    sortingComparator: (a, b) => (parseNum(a.return1y) ?? 0) - (parseNum(b.return1y) ?? 0),
   },
 ];
 
@@ -128,19 +127,52 @@ export default function Screener() {
   const activeKey = activeHref.replace("#", "") as IndustryGroupKey;
   const { data, loading, error } = useScreenerData();
 
+  const allGroupKeys = useMemo(() => SIDEBAR_SECTIONS.flat(), []);
+
   const industryKeys = useMemo(
     () => Object.keys(INDUSTRY_TREE[activeKey]) as IndustryKey[],
     [activeKey]
   );
 
   const [selectedTab, setSelectedTab] = useState<string>("all");
-  const [sortingColumn, setSortingColumn] = useState<TableProps.SortingColumn<IndustryData>>({ sortingField: "name" });
+  const [sortingColumn, setSortingColumn] = useState<TableProps.SortingColumn<IndustryData>>({ sortingField: "pe" });
   const [sortingDescending, setSortingDescending] = useState(false);
 
   // Reset tab when group changes
   useMemo(() => {
     setSelectedTab("all");
   }, [activeKey]);
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        e.preventDefault();
+        const currentIndex = allGroupKeys.indexOf(activeKey);
+        if (currentIndex === -1) return;
+        const nextIndex =
+          e.key === "ArrowDown"
+            ? Math.min(currentIndex + 1, allGroupKeys.length - 1)
+            : Math.max(currentIndex - 1, 0);
+        setActiveHref(`#${allGroupKeys[nextIndex]}`);
+      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+        e.preventDefault();
+        const allTabs = ["all", ...industryKeys];
+        const currentIndex = allTabs.indexOf(selectedTab);
+        if (currentIndex === -1) return;
+        const nextIndex =
+          e.key === "ArrowRight"
+            ? Math.min(currentIndex + 1, allTabs.length - 1)
+            : Math.max(currentIndex - 1, 0);
+        setSelectedTab(allTabs[nextIndex]);
+      }
+    },
+    [activeKey, allGroupKeys, industryKeys, selectedTab]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const filteredData = useMemo(() => {
     const industryKey = selectedTab === "all" ? undefined : (selectedTab as IndustryKey);
