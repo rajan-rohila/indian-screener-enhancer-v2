@@ -53,14 +53,6 @@ const COLUMN_DEFINITIONS: TableProps.ColumnDefinition<IndustryData>[] = [
     sortingComparator: (a, b) => a.name.localeCompare(b.name),
   },
   {
-    id: "companies",
-    sortingField: "companies",
-    header: "Companies",
-    width: 80,
-    cell: (item) => item.companies,
-    sortingComparator: (a, b) => a.companies - b.companies,
-  },
-  {
     id: "pe",
     sortingField: "pe",
     header: "P/E",
@@ -73,6 +65,14 @@ const COLUMN_DEFINITIONS: TableProps.ColumnDefinition<IndustryData>[] = [
     header: "1Y Return",
     cell: (item) => <ValueCell value={item.return1y} />,
     sortingComparator: (a, b) => (parseNum(a.return1y) ?? 0) - (parseNum(b.return1y) ?? 0),
+  },
+  {
+    id: "companies",
+    sortingField: "companies",
+    header: "Companies",
+    width: 80,
+    cell: (item) => item.companies,
+    sortingComparator: (a, b) => a.companies - b.companies,
   },
   {
     id: "marketCap",
@@ -151,8 +151,8 @@ export default function Screener() {
         if (currentIndex === -1) return;
         const nextIndex =
           e.key === "ArrowDown"
-            ? Math.min(currentIndex + 1, allGroupKeys.length - 1)
-            : Math.max(currentIndex - 1, 0);
+            ? (currentIndex + 1) % allGroupKeys.length
+            : (currentIndex - 1 + allGroupKeys.length) % allGroupKeys.length;
         setActiveHref(`#${allGroupKeys[nextIndex]}`);
       } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         e.preventDefault();
@@ -161,8 +161,8 @@ export default function Screener() {
         if (currentIndex === -1) return;
         const nextIndex =
           e.key === "ArrowRight"
-            ? Math.min(currentIndex + 1, allTabs.length - 1)
-            : Math.max(currentIndex - 1, 0);
+            ? (currentIndex + 1) % allTabs.length
+            : (currentIndex - 1 + allTabs.length) % allTabs.length;
         setSelectedTab(allTabs[nextIndex]);
       }
     },
