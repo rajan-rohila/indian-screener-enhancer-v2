@@ -6,7 +6,7 @@ export const INDUSTRY_GROUPS = {
   CHEMICALS: "Chemicals",
   INDUSTRIAL: "Industrial",
   AUTO: "Auto",
-  INFRASTRUCTURE: "Infrastructure",
+  INFRASTRUCTURE: "Infra",
   CONSTRUCTION: "Construction",
   CONSUMER: "Consumer",
   FB: "F&B",

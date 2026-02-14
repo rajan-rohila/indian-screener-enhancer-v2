@@ -21,17 +21,19 @@ import type { IndustryData } from "../../types/screener";
 import { SIDEBAR_SECTIONS } from "./sidebarSections";
 import "./Screener.css";
 
-const navItems: SideNavigationProps.Item[] = SIDEBAR_SECTIONS.flatMap((section, i) => {
-  const links: SideNavigationProps.Item[] = section.map((key) => ({
-    type: "link" as const,
-    text: INDUSTRY_GROUPS[key],
-    href: `#${key}`,
-  }));
-  if (i < SIDEBAR_SECTIONS.length - 1) {
-    links.push({ type: "divider" as const });
-  }
-  return links;
-});
+function buildNavItems(activeKey: string): SideNavigationProps.Item[] {
+  return SIDEBAR_SECTIONS.flatMap((section, i) => {
+    const links: SideNavigationProps.Item[] = section.map((key) => ({
+      type: "link" as const,
+      text: key === activeKey ? `${INDUSTRY_GROUPS[key]} ›` : INDUSTRY_GROUPS[key],
+      href: `#${key}`,
+    }));
+    if (i < SIDEBAR_SECTIONS.length - 1) {
+      links.push({ type: "divider" as const });
+    }
+    return links;
+  });
+}
 
 function parseNum(val: string): number | null {
   if (!val || val === "-" || val === "%") return null;
@@ -135,6 +137,7 @@ export default function Screener() {
   const [selectedRowIndex, setSelectedRowIndex] = useState(0);
 
   const allGroupKeys = useMemo(() => SIDEBAR_SECTIONS.flat(), []);
+  const navItems = useMemo(() => buildNavItems(activeKey), [activeKey]);
 
   const industryKeys = useMemo(
     () => Object.keys(INDUSTRY_TREE[activeKey]) as IndustryKey[],
