@@ -1,0 +1,4 @@
+/* Hide the radio button selection column */
+[class*="selection-control"] {
+  display: none !important;
+}

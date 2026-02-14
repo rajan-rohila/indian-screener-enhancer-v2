@@ -9,6 +9,7 @@ import {
   SpaceBetween,
   StatusIndicator,
   Link,
+  Icon,
 } from "@cloudscape-design/components";
 import type { SideNavigationProps, TableProps } from "@cloudscape-design/components";
 import { INDUSTRY_GROUPS, type IndustryGroupKey } from "../../constants/industryGroups";
@@ -18,6 +19,7 @@ import { INDUSTRY_TREE } from "../../constants/industryTree";
 import { useScreenerData } from "../../hooks/useScreenerData";
 import type { IndustryData } from "../../types/screener";
 import { SIDEBAR_SECTIONS } from "./sidebarSections";
+import "./Screener.css";
 
 const navItems: SideNavigationProps.Item[] = SIDEBAR_SECTIONS.flatMap((section, i) => {
   const links: SideNavigationProps.Item[] = section.map((key) => ({
@@ -123,10 +125,14 @@ function getSubIndustryNames(groupKey: IndustryGroupKey, industryKey?: IndustryK
     .map((k) => SUB_INDUSTRIES[k]);
 }
 
+type FocusPanel = "nav" | "table";
+
 export default function Screener() {
   const [activeHref, setActiveHref] = useState("#FINANCIAL");
   const activeKey = activeHref.replace("#", "") as IndustryGroupKey;
   const { data, loading, error } = useScreenerData();
+  const [focusPanel, setFocusPanel] = useState<FocusPanel>("nav");
+  const [selectedRowIndex, setSelectedRowIndex] = useState(0);
 
   const allGroupKeys = useMemo(() => SIDEBAR_SECTIONS.flat(), []);
 
@@ -139,41 +145,11 @@ export default function Screener() {
   const [sortingColumn, setSortingColumn] = useState<TableProps.SortingColumn<IndustryData>>({ sortingField: "pe" });
   const [sortingDescending, setSortingDescending] = useState(false);
 
-  // Reset tab when group changes
+  // Reset tab and row when group changes
   useMemo(() => {
     setSelectedTab("all");
+    setSelectedRowIndex(0);
   }, [activeKey]);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-        e.preventDefault();
-        const currentIndex = allGroupKeys.indexOf(activeKey);
-        if (currentIndex === -1) return;
-        const nextIndex =
-          e.key === "ArrowDown"
-            ? (currentIndex + 1) % allGroupKeys.length
-            : (currentIndex - 1 + allGroupKeys.length) % allGroupKeys.length;
-        setActiveHref(`#${allGroupKeys[nextIndex]}`);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-        e.preventDefault();
-        const allTabs = ["all", ...sortedIndustryKeys];
-        const currentIndex = allTabs.indexOf(selectedTab);
-        if (currentIndex === -1) return;
-        const nextIndex =
-          e.key === "ArrowRight"
-            ? (currentIndex + 1) % allTabs.length
-            : (currentIndex - 1 + allTabs.length) % allTabs.length;
-        setSelectedTab(allTabs[nextIndex]);
-      }
-    },
-    [activeKey, allGroupKeys, industryKeys, selectedTab]
-  );
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleKeyDown]);
 
   const filteredData = useMemo(() => {
     const industryKey = selectedTab === "all" ? undefined : (selectedTab as IndustryKey);
@@ -196,6 +172,62 @@ export default function Screener() {
     });
   }, [industryKeys, data, activeKey]);
 
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "1") { e.preventDefault(); setFocusPanel("nav"); return; }
+      if (e.key === "2") { e.preventDefault(); setFocusPanel("table"); setSelectedRowIndex(0); return; }
+
+      if (focusPanel === "nav") {
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          e.preventDefault();
+          const idx = allGroupKeys.indexOf(activeKey);
+          if (idx === -1) return;
+          const next = e.key === "ArrowDown"
+            ? (idx + 1) % allGroupKeys.length
+            : (idx - 1 + allGroupKeys.length) % allGroupKeys.length;
+          setActiveHref(`#${allGroupKeys[next]}`);
+        } else if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setFocusPanel("table");
+          setSelectedRowIndex(0);
+        }
+      } else {
+        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          const allTabs = ["all", ...sortedIndustryKeys];
+          const currentIdx = allTabs.indexOf(selectedTab);
+          if (currentIdx === -1) return;
+          if (e.key === "ArrowLeft" && currentIdx === 0) {
+            // At first tab, go back to nav
+            setFocusPanel("nav");
+          } else {
+            const next = e.key === "ArrowRight"
+              ? (currentIdx + 1) % allTabs.length
+              : (currentIdx - 1 + allTabs.length) % allTabs.length;
+            setSelectedTab(allTabs[next]);
+            setSelectedRowIndex(0);
+          }
+        } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          e.preventDefault();
+          if (sortedData.length === 0) return;
+          setSelectedRowIndex((prev) =>
+            e.key === "ArrowDown"
+              ? (prev + 1) % sortedData.length
+              : (prev - 1 + sortedData.length) % sortedData.length
+          );
+        } else if (e.key === "Enter" && sortedData[selectedRowIndex]) {
+          window.open(sortedData[selectedRowIndex].url, "_blank");
+        }
+      }
+    },
+    [focusPanel, activeKey, allGroupKeys, sortedData, selectedRowIndex, sortedIndustryKeys, selectedTab]
+  );
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
   const tabItems = [
     {
       id: "all",
@@ -211,24 +243,49 @@ export default function Screener() {
 
   return (
     <div style={{ display: "flex", height: "100%", marginTop: "16px", gap: "16px", maxWidth: "100%", overflow: "hidden" }}>
-      <div style={{ width: 160, flexShrink: 0 }}>
-        <Container disableContentPaddings>
+      <div
+        style={{
+          width: 160,
+          flexShrink: 0,
+        }}
+        onClick={() => setFocusPanel("nav")}
+      >
+        <Container
+          disableContentPaddings
+          header={
+            <span style={{ visibility: focusPanel === "nav" ? "visible" : "hidden" }}><Box float="right"><Icon name="status-positive" variant="success" /></Box></span>
+          }
+        >
           <SideNavigation
             activeHref={activeHref}
             onFollow={(e) => {
               e.preventDefault();
               setActiveHref(e.detail.href);
+              setFocusPanel("nav");
             }}
             items={navItems}
           />
         </Container>
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <Container>
+      <div
+        style={{
+          flex: 1,
+          minWidth: 0,
+        }}
+        onClick={() => setFocusPanel("table")}
+      >
+        <Container
+          header={
+            <span style={{ visibility: focusPanel === "table" ? "visible" : "hidden" }}><Box float="right"><Icon name="status-positive" variant="success" /></Box></span>
+          }
+        >
           <SpaceBetween size="l">
             <Tabs
               activeTabId={selectedTab}
-              onChange={({ detail }) => setSelectedTab(detail.activeTabId)}
+              onChange={({ detail }) => {
+                setSelectedTab(detail.activeTabId);
+                setSelectedRowIndex(0);
+              }}
               tabs={tabItems}
             />
             <div style={{ maxHeight: "calc(100vh - 280px)", overflow: "auto" }}>
@@ -238,6 +295,20 @@ export default function Screener() {
                 loading={loading}
                 loadingText="Loading data from Screener.in..."
                 stickyHeader
+                selectionType="single"
+                selectedItems={
+                  sortedData[selectedRowIndex] && focusPanel === "table"
+                    ? [sortedData[selectedRowIndex]]
+                    : []
+                }
+                onSelectionChange={({ detail }) => {
+                  const item = detail.selectedItems[0];
+                  if (item) {
+                    const idx = sortedData.indexOf(item);
+                    if (idx >= 0) setSelectedRowIndex(idx);
+                  }
+                  setFocusPanel("table");
+                }}
                 sortingColumn={sortingColumn}
                 sortingDescending={sortingDescending}
                 onSortingChange={({ detail }) => {
