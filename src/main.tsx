@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@cloudscape-design/global-styles/index.css";
-import { AppWithRouter as App } from "./App.jsx";
+import { AppWithRouter as App } from "./App.js";
 
-createRoot(document.getElementById("root")).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
   </StrictMode>

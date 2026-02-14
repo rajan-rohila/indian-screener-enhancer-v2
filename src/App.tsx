@@ -8,18 +8,19 @@ import {
 } from "@cloudscape-design/components";
 import Home from "./pages/Home/Home";
 import Recommendations from "./pages/Recommendations/Recommendations";
+import Screener from "./pages/Screener/Screener";
 import SunIcon from "./assets/icons/SunIcon";
 import MoonIcon from "./assets/icons/MoonIcon";
 import "./App.css";
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const [navOpen, setNavOpen] = useState(true);
+  const [navOpen, setNavOpen] = useState(false);
 
-  // Apply dark mode on initial render
-  useState(() => applyMode(Mode.Dark));
+  // Apply light mode on initial render
+  useState(() => applyMode(Mode.Light));
 
   const handleToggleTheme = () => {
     const newMode = !darkMode;
@@ -33,7 +34,8 @@ export default function App() {
         <TopNavigation
           identity={{
             href: "/",
-            title: "Indian Screener Enhancer",
+            title: "Home",
+            onFollow: (e) => { e.preventDefault(); navigate("/"); },
           }}
           utilities={[
             {
@@ -63,6 +65,7 @@ export default function App() {
             }}
             items={[
               { type: "link", text: "Home", href: "/" },
+              { type: "link", text: "Screener", href: "/screener" },
               { type: "link", text: "Recommendations", href: "/recommendations" },
             ]}
           />
@@ -70,6 +73,7 @@ export default function App() {
         content={
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/screener" element={<Screener />} />
             <Route path="/recommendations" element={<Recommendations />} />
           </Routes>
         }

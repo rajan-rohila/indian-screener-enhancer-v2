@@ -4,6 +4,14 @@
   z-index: 1002;
 }
 
+#h a, #h a:hover, #h a:visited, #h a:active,
+#h [class*="top-navigation"] a,
+#h [class*="top-navigation"] a:hover,
+#h [class*="top-navigation"] a:visited,
+#h [class*="top-navigation"] a:active {
+  text-decoration: none !important;
+}
+
 /* Light mode header */
 #h [class*="top-navigation"] {
   background-color: #ffffff;
@@ -17,6 +25,7 @@
 #h [class*="top-navigation"] svg {
   color: #000716;
   fill: #000716;
+  text-decoration: none;
 }
 
 /* Dark mode header */
@@ -32,4 +41,5 @@
 .awsui-dark-mode #h [class*="top-navigation"] svg {
   color: #ffffff;
   fill: #ffffff;
+  text-decoration: none;
 }
