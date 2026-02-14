@@ -1,0 +1,34 @@
+#h {
+  position: sticky;
+  top: 0;
+  z-index: 1002;
+}
+
+/* Light mode header */
+#h [class*="top-navigation"] {
+  background-color: #ffffff;
+  color: #000716;
+  border-bottom: 0.5px solid #C6C6CD;
+}
+
+#h [class*="top-navigation"] a,
+#h [class*="top-navigation"] button,
+#h [class*="top-navigation"] span,
+#h [class*="top-navigation"] svg {
+  color: #000716;
+  fill: #000716;
+}
+
+/* Dark mode header */
+.awsui-dark-mode #h [class*="top-navigation"] {
+  background-color: #0f1b2a;
+  color: #d1d5db;
+}
+
+.awsui-dark-mode #h [class*="top-navigation"] a,
+.awsui-dark-mode #h [class*="top-navigation"] button,
+.awsui-dark-mode #h [class*="top-navigation"] span,
+.awsui-dark-mode #h [class*="top-navigation"] svg {
+  color: #d1d5db;
+  fill: #d1d5db;
+}

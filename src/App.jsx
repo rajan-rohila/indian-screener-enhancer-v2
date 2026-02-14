@@ -1,58 +1,86 @@
+import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
+import { applyMode, Mode } from "@cloudscape-design/global-styles";
 import {
   AppLayout,
-  Button,
-  Container,
-  FormField,
-  Header,
-  Input,
-  Link,
-  SpaceBetween,
+  SideNavigation,
+  TopNavigation,
 } from "@cloudscape-design/components";
+import Home from "./pages/Home/Home";
+import Recommendations from "./pages/Recommendations/Recommendations";
+import SunIcon from "./assets/icons/SunIcon";
+import MoonIcon from "./assets/icons/MoonIcon";
+import "./App.css";
 
-/**
- * Learn more about Cloudscape Design System at
- * https://cloudscape.design
- */
 export default function App() {
-  const [value, setValue] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [navOpen, setNavOpen] = useState(true);
+
+  const handleToggleTheme = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    applyMode(newMode ? Mode.Dark : Mode.Light);
+  };
 
   return (
-    <AppLayout
-      toolsHide={true}
-      navigationHide={true}
-      contentHeader={
-        <Header
-          variant="h1"
-          description={
-            <>
-              This React app uses Cloudscape components. Learn more in{" "}
-              <Link
-                href="https://cloudscape.design"
-                external
-                externalIconAriaLabel="Opens in a new tab"
-              >
-                the official documentation.
-              </Link>
-            </>
-          }
-        >
-          Hello from Cloudscape Design System
-        </Header>
-      }
-      content={
-        <Container>
-          <SpaceBetween size="s">
-            <FormField label="Start editing to see some magic happen">
-              <Input
-                value={value}
-                onChange={(event) => setValue(event.detail.value)}
-              />
-            </FormField>
-            <Button variant="primary">Click me</Button>
-          </SpaceBetween>
-        </Container>
-      }
-    />
+    <>
+      <div id="h">
+        <TopNavigation
+          identity={{
+            href: "/",
+            title: "Indian Screener Enhancer",
+          }}
+          utilities={[
+            {
+              type: "button",
+              iconSvg: darkMode ? <SunIcon /> : <MoonIcon />,
+              ariaLabel: darkMode ? "Switch to light mode" : "Switch to dark mode",
+              onClick: handleToggleTheme,
+            },
+          ]}
+          i18nStrings={{
+            overflowMenuTriggerText: "More",
+            overflowMenuDismissAriaLabel: "Close",
+          }}
+        />
+      </div>
+      <AppLayout
+        headerSelector="#h"
+        toolsHide={true}
+        navigationOpen={navOpen}
+        onNavigationChange={({ detail }) => setNavOpen(detail.open)}
+        navigation={
+          <SideNavigation
+            activeHref={location.pathname}
+            onFollow={(event) => {
+              event.preventDefault();
+              navigate(event.detail.href);
+            }}
+            items={[
+              { type: "link", text: "Home", href: "/" },
+              { type: "link", text: "Recommendations", href: "/recommendations" },
+            ]}
+          />
+        }
+        content={
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+          </Routes>
+        }
+      />
+    </>
   );
 }
+
+function AppWithRouter() {
+  return (
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+}
+
+export { AppWithRouter };
