@@ -28,6 +28,25 @@ const ANALYST_IMAGES: Record<AnalystKey, string> = {
   [AnalystKey.KEDIA]: kediaImg,
 };
 
+function PeBadge({ pe }: { pe: string }) {
+  const val = Math.round(parseFloat(pe) / 5) * 5;
+  const color = val <= 50 ? "#2ea043" : val <= 100 ? "#d29922" : "#cf222e";
+  return (
+    <div style={{ textAlign: "right" }}>
+      <span style={{
+        background: color,
+        color: "#fff",
+        borderRadius: 4,
+        padding: "2px 6px",
+        fontSize: 12,
+        fontWeight: 500,
+      }}>
+        {val}
+      </span>
+    </div>
+  );
+}
+
 function ThesisCell({ votes, filterAnalyst }: { votes: Vote[]; filterAnalyst?: AnalystKey }) {
   const displayVotes = filterAnalyst ? votes.filter((v) => v.analyst === filterAnalyst) : votes;
   return (
@@ -262,7 +281,7 @@ export default function Recommendations() {
 
   const igColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.industryGroups[0]>[] = [
     { id: "name", header: "Name", cell: (item) => INDUSTRY_GROUPS[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
-    { id: "pe", header: "P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
+    { id: "pe", header: "~P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
   ];
@@ -273,7 +292,7 @@ export default function Recommendations() {
       const url = industryUrls.get(name);
       return url ? <Link href={url} external>{name}</Link> : <>{name}</>;
     }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
-    { id: "pe", header: "P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
+    { id: "pe", header: "~P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
   ];
@@ -283,9 +302,9 @@ export default function Recommendations() {
       const stock = STOCKS[item.key];
       return stock.screenerUrl ? <Link href={stock.screenerUrl} external>{stock.name}</Link> : <>{stock.name}</>;
     }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
-    { id: "pe", header: "P/E", cell: (item) => {
+    { id: "pe", header: "~P/E", cell: (item) => {
       const sd = stockData.get(item.key as StockKey);
-      return sd?.pe ? Math.round(parseFloat(sd.pe)).toString() : null;
+      return sd?.pe ? <PeBadge pe={sd.pe} /> : null;
     }, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
@@ -307,13 +326,13 @@ export default function Recommendations() {
     },
     {
       id: "pe",
-      header: "P/E",
+      header: "~P/E",
       width: PE_WIDTH,
       minWidth: PE_WIDTH,
       cell: (item) => {
         if (item.level !== "stock" || !item.stockKey) return null;
         const sd = stockData.get(item.stockKey);
-        return sd?.pe ? Math.round(parseFloat(sd.pe)).toString() : null;
+        return sd?.pe ? <PeBadge pe={sd.pe} /> : null;
       },
     },
     {
