@@ -12,10 +12,10 @@ import {
   Icon,
 } from "@cloudscape-design/components";
 import type { SideNavigationProps, TableProps } from "@cloudscape-design/components";
-import { INDUSTRY_GROUPS, type IndustryGroupKey } from "../../constants/industryGroups";
-import { INDUSTRIES, type IndustryKey } from "../../constants/industries";
-import { SUB_INDUSTRIES } from "../../constants/subIndustries";
-import { INDUSTRY_TREE } from "../../constants/industryTree";
+import { INDUSTRY_GROUPS, type IndustryGroupKey } from "../../constants/industry/industryGroups";
+import { INDUSTRIES, type IndustryKey } from "../../constants/industry/industries";
+import { SUB_INDUSTRIES } from "../../constants/industry/subIndustries";
+import { INDUSTRY_TREE } from "../../constants/industry/industryTree";
 import { useScreenerData } from "../../hooks/useScreenerData";
 import type { IndustryData } from "../../types/screener";
 import { SIDEBAR_SECTIONS } from "./sidebarSections";
@@ -25,7 +25,7 @@ function buildNavItems(activeKey: string): SideNavigationProps.Item[] {
   return SIDEBAR_SECTIONS.flatMap((section, i) => {
     const links: SideNavigationProps.Item[] = section.map((key) => ({
       type: "link" as const,
-      text: key === activeKey ? `${INDUSTRY_GROUPS[key]} ›` : INDUSTRY_GROUPS[key],
+      text: key === activeKey ? `${INDUSTRY_GROUPS[key].name} ›` : INDUSTRY_GROUPS[key].name,
       href: `#${key}`,
     }));
     if (i < SIDEBAR_SECTIONS.length - 1) {
@@ -120,11 +120,11 @@ function getSubIndustryNames(groupKey: IndustryGroupKey, industryKey?: IndustryK
   const group = INDUSTRY_TREE[groupKey];
   if (industryKey) {
     const subKeys = group[industryKey] ?? [];
-    return subKeys.map((k) => SUB_INDUSTRIES[k]);
+    return subKeys.map((k) => SUB_INDUSTRIES[k].name);
   }
   return Object.values(group)
     .flat()
-    .map((k) => SUB_INDUSTRIES[k]);
+    .map((k) => SUB_INDUSTRIES[k].name);
 }
 
 type FocusPanel = "nav" | "table";
@@ -234,12 +234,12 @@ export default function Screener() {
   const tabItems = [
     {
       id: "all",
-      label: `All ${INDUSTRY_GROUPS[activeKey]}`,
+      label: `All ${INDUSTRY_GROUPS[activeKey].name}`,
       content: null,
     },
     ...sortedIndustryKeys.map((key) => ({
       id: key,
-      label: INDUSTRIES[key],
+      label: INDUSTRIES[key].name,
       content: null,
     })),
   ];

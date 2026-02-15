@@ -1,4 +1,4 @@
-import type { IndustryGroupKey } from "../../constants/industryGroups";
+import type { IndustryGroupKey } from "../../constants/industry/industryGroups";
 
 export const SIDEBAR_SECTIONS: IndustryGroupKey[][] = [
   ["FINANCIAL", "INSURANCE"],

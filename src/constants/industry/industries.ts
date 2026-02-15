@@ -1,0 +1,138 @@
+export enum IndustryKey {
+  // FINANCIAL
+  BANKS = "BANKS",
+  NBFC = "NBFC",
+  ASSET_MGMT = "ASSET_MGMT",
+  FINANCIAL_SERVICES = "FINANCIAL_SERVICES",
+  // INSURANCE
+  INSURANCE = "INSURANCE",
+  INSURANCE_DISTRIBUTORS = "INSURANCE_DISTRIBUTORS",
+  // METALS
+  IRON = "IRON",
+  ALUMINIUM = "ALUMINIUM",
+  COPPER = "COPPER",
+  ZINC = "ZINC",
+  PRECIOUS_METALS = "PRECIOUS_METALS",
+  OTHER_METALS = "OTHER_METALS",
+  // ENERGY
+  POWER = "POWER",
+  OIL_AND_GAS = "OIL_AND_GAS",
+  COAL = "COAL",
+  // CHEMICALS
+  SPECIALTY_CHEMICALS = "SPECIALTY_CHEMICALS",
+  AGRI_CHEMICALS = "AGRI_CHEMICALS",
+  COMMODITY_CHEMICALS = "COMMODITY_CHEMICALS",
+  INDUSTRIAL_CHEMICALS = "INDUSTRIAL_CHEMICALS",
+  TRADING_CHEMICALS = "TRADING_CHEMICALS",
+  // INDUSTRIAL
+  ELECTRICAL = "ELECTRICAL",
+  MACHINERY = "MACHINERY",
+  COMPONENTS = "COMPONENTS",
+  INDUSTRIAL_PRODUCTS = "INDUSTRIAL_PRODUCTS",
+  // AUTO
+  OEM = "OEM",
+  ANCILLARY = "ANCILLARY",
+  DEALER = "DEALER",
+  // INFRASTRUCTURE
+  CIVIL_CONSTRUCTION = "CIVIL_CONSTRUCTION",
+  ROAD = "ROAD",
+  RAIL = "RAIL",
+  SEA = "SEA",
+  AIR = "AIR",
+  // CONSTRUCTION
+  MATERIALS = "MATERIALS",
+  REAL_ESTATE = "REAL_ESTATE",
+  // CONSUMER
+  STAPLES = "STAPLES",
+  RETAIL = "RETAIL",
+  DURABLES = "DURABLES",
+  DISCRETIONARY = "DISCRETIONARY",
+  // F&B
+  BEVERAGES = "BEVERAGES",
+  FB_STAPLES = "FB_STAPLES",
+  PROTEIN = "PROTEIN",
+  OTHER_FB = "OTHER_FB",
+  // TEXTILE
+  TEXTILE_ALL = "TEXTILE_ALL",
+  // CRAFT TYPE
+  CRAFT_OTHER = "CRAFT_OTHER",
+  // MEDIA
+  ENTERTAINMENT = "ENTERTAINMENT",
+  ADVERTISING = "ADVERTISING",
+  DIGITAL_MEDIA = "DIGITAL_MEDIA",
+  PRINT_MEDIA = "PRINT_MEDIA",
+  // HEALTHCARE
+  PHARMA = "PHARMA",
+  HEALTHCARE_SERVICES = "HEALTHCARE_SERVICES",
+  EQUIPMENT = "EQUIPMENT",
+  // TECH
+  IT_SERVICES = "IT_SERVICES",
+  TELECOM = "TELECOM",
+  HARDWARE = "HARDWARE",
+  BIOTECH = "BIOTECH",
+  // DEFENSE
+  DEFENSE_OTHER = "DEFENSE_OTHER",
+}
+
+interface IndustryInfo {
+  name: string;
+}
+
+export const INDUSTRIES: Record<IndustryKey, IndustryInfo> = {
+  [IndustryKey.BANKS]: { name: "Banks" },
+  [IndustryKey.NBFC]: { name: "NBFC" },
+  [IndustryKey.ASSET_MGMT]: { name: "Asset Mgmt" },
+  [IndustryKey.FINANCIAL_SERVICES]: { name: "Services" },
+  [IndustryKey.INSURANCE]: { name: "Insurance" },
+  [IndustryKey.INSURANCE_DISTRIBUTORS]: { name: "Distributors" },
+  [IndustryKey.IRON]: { name: "Iron" },
+  [IndustryKey.ALUMINIUM]: { name: "Aluminium" },
+  [IndustryKey.COPPER]: { name: "Copper" },
+  [IndustryKey.ZINC]: { name: "Zinc" },
+  [IndustryKey.PRECIOUS_METALS]: { name: "Precious" },
+  [IndustryKey.OTHER_METALS]: { name: "Other" },
+  [IndustryKey.POWER]: { name: "Power" },
+  [IndustryKey.OIL_AND_GAS]: { name: "Oil & Gas" },
+  [IndustryKey.COAL]: { name: "Coal" },
+  [IndustryKey.SPECIALTY_CHEMICALS]: { name: "Specialty" },
+  [IndustryKey.AGRI_CHEMICALS]: { name: "Agri" },
+  [IndustryKey.COMMODITY_CHEMICALS]: { name: "Commodity" },
+  [IndustryKey.INDUSTRIAL_CHEMICALS]: { name: "Industrial" },
+  [IndustryKey.TRADING_CHEMICALS]: { name: "Trading" },
+  [IndustryKey.ELECTRICAL]: { name: "Electrical" },
+  [IndustryKey.MACHINERY]: { name: "Machinery" },
+  [IndustryKey.COMPONENTS]: { name: "Components" },
+  [IndustryKey.INDUSTRIAL_PRODUCTS]: { name: "Products" },
+  [IndustryKey.OEM]: { name: "OEM" },
+  [IndustryKey.ANCILLARY]: { name: "Ancillary" },
+  [IndustryKey.DEALER]: { name: "Dealer" },
+  [IndustryKey.CIVIL_CONSTRUCTION]: { name: "Construction" },
+  [IndustryKey.ROAD]: { name: "Road" },
+  [IndustryKey.RAIL]: { name: "Rail" },
+  [IndustryKey.SEA]: { name: "Sea" },
+  [IndustryKey.AIR]: { name: "Air" },
+  [IndustryKey.MATERIALS]: { name: "Materials" },
+  [IndustryKey.REAL_ESTATE]: { name: "Real Estate" },
+  [IndustryKey.STAPLES]: { name: "Staples" },
+  [IndustryKey.RETAIL]: { name: "Retail" },
+  [IndustryKey.DURABLES]: { name: "Durables" },
+  [IndustryKey.DISCRETIONARY]: { name: "Discretionary" },
+  [IndustryKey.BEVERAGES]: { name: "Beverages" },
+  [IndustryKey.FB_STAPLES]: { name: "Staples" },
+  [IndustryKey.PROTEIN]: { name: "Protein" },
+  [IndustryKey.OTHER_FB]: { name: "Other" },
+  [IndustryKey.TEXTILE_ALL]: { name: "All" },
+  [IndustryKey.CRAFT_OTHER]: { name: "Other" },
+  [IndustryKey.ENTERTAINMENT]: { name: "Entertainment" },
+  [IndustryKey.ADVERTISING]: { name: "Advertising" },
+  [IndustryKey.DIGITAL_MEDIA]: { name: "Digital Media" },
+  [IndustryKey.PRINT_MEDIA]: { name: "Print Media" },
+  [IndustryKey.PHARMA]: { name: "Pharma" },
+  [IndustryKey.HEALTHCARE_SERVICES]: { name: "Services" },
+  [IndustryKey.EQUIPMENT]: { name: "Equipment" },
+  [IndustryKey.IT_SERVICES]: { name: "IT Services" },
+  [IndustryKey.TELECOM]: { name: "Telecom" },
+  [IndustryKey.HARDWARE]: { name: "Hardware" },
+  [IndustryKey.BIOTECH]: { name: "Biotech" },
+  [IndustryKey.DEFENSE_OTHER]: { name: "Other" },
+};
