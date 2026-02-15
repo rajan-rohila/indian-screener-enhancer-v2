@@ -16,6 +16,9 @@ interface Shortcut {
 }
 
 const shortcuts: Shortcut[] = [
+  { key: "H", action: "Go to Home page", page: "All" },
+  { key: "S", action: "Go to Screener page", page: "All" },
+  { key: "R", action: "Go to Recommendations page", page: "All" },
   { key: "↑ / ↓", action: "Navigate between industry groups", page: "Screener" },
   { key: "→", action: "Move focus to the table panel", page: "Screener" },
   { key: "← / →", action: "Switch between industry tabs (when in table panel)", page: "Screener" },

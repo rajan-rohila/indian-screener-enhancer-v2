@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { applyMode, Mode } from "@cloudscape-design/global-styles";
 import {
   AppLayout,
@@ -27,6 +27,17 @@ export default function App() {
     setDarkMode(newMode);
     applyMode(newMode ? Mode.Dark : Mode.Light);
   };
+
+  const handleGlobalKeys = useCallback((e: KeyboardEvent) => {
+    if (e.key === "h" || e.key === "H") { navigate("/"); }
+    else if (e.key === "s" || e.key === "S") { navigate("/screener"); }
+    else if (e.key === "r" || e.key === "R") { navigate("/recommendations"); }
+  }, [navigate]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleGlobalKeys);
+    return () => window.removeEventListener("keydown", handleGlobalKeys);
+  }, [handleGlobalKeys]);
 
   return (
     <>
