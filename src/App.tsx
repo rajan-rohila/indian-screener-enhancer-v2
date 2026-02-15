@@ -29,6 +29,11 @@ export default function App() {
   };
 
   const handleGlobalKeys = useCallback((e: KeyboardEvent) => {
+    // Don't trigger shortcuts when typing in inputs
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+
     if (e.key === "h" || e.key === "H") { navigate("/"); }
     else if (e.key === "s" || e.key === "S") { navigate("/screener"); }
     else if (e.key === "r" || e.key === "R") { navigate("/recommendations"); }
