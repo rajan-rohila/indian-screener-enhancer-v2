@@ -65,7 +65,7 @@ export default function Recommendations() {
   const [igExpanded, setIgExpanded] = useState(false);
   const [siExpanded, setSiExpanded] = useState(false);
   const [stExpanded, setStExpanded] = useState(true);
-  const [expandedItems, setExpandedItems] = useState<ConsolidatedRow[]>([]);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   // Always build full tree for aggregate vote counts
   const fullTree = useMemo(() => buildTree(), []);
@@ -233,6 +233,27 @@ export default function Recommendations() {
     [consolidatedRows]
   );
 
+  const expandedItems = useMemo(
+    () => {
+      const rowMap = new Map(consolidatedRows.map((r) => [r.id, r]));
+      return [...expandedIds].map((id) => rowMap.get(id)).filter(Boolean) as ConsolidatedRow[];
+    },
+    [consolidatedRows, expandedIds]
+  );
+
+  // Stable children lookup
+  const childrenMap = useMemo(() => {
+    const map = new Map<string, ConsolidatedRow[]>();
+    for (const row of consolidatedRows) {
+      if (row.parentId) {
+        const children = map.get(row.parentId) ?? [];
+        children.push(row);
+        map.set(row.parentId, children);
+      }
+    }
+    return map;
+  }, [consolidatedRows]);
+
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
   const NAME_WIDTH = 300;
@@ -301,7 +322,7 @@ export default function Recommendations() {
       width: VOTES_WIDTH,
       minWidth: VOTES_WIDTH,
       cell: (item) => {
-        const hasChildren = consolidatedRows.some((r) => r.parentId === item.id);
+        const hasChildren = childrenMap.has(item.id);
         const isExpanded = expandedItems.some((r) => r.id === item.id);
         if (hasChildren && isExpanded) return null;
         return item.votes.length;
@@ -311,7 +332,7 @@ export default function Recommendations() {
       id: "thesis",
       header: "Thesis",
       cell: (item) => {
-        const hasChildren = consolidatedRows.some((r) => r.parentId === item.id);
+        const hasChildren = childrenMap.has(item.id);
         const isExpanded = expandedItems.some((r) => r.id === item.id);
         if (hasChildren && isExpanded) return null;
         return <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} />;
@@ -417,7 +438,7 @@ export default function Recommendations() {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
               <Toggle
                 checked={consolidated}
-                onChange={({ detail }) => { setConsolidated(detail.checked); setExpandedItems([]); }}
+                onChange={({ detail }) => { setConsolidated(detail.checked); setExpandedIds(new Set()); }}
               >
                 Consolidate
               </Toggle>
@@ -428,12 +449,15 @@ export default function Recommendations() {
                     variant="icon"
                     ariaLabel="Fold one level"
                     onClick={() => {
-                      // First collapse deepest level (sub-industries), then top level (groups)
-                      const expandedSubIndustries = expandedItems.filter((r) => r.level === "subIndustry");
-                      if (expandedSubIndustries.length > 0) {
-                        setExpandedItems(expandedItems.filter((r) => r.level !== "subIndustry"));
+                      const expandedSubIds = expandedItems.filter((r) => r.level === "subIndustry").map((r) => r.id);
+                      if (expandedSubIds.length > 0) {
+                        setExpandedIds((prev) => {
+                          const next = new Set(prev);
+                          for (const id of expandedSubIds) next.delete(id);
+                          return next;
+                        });
                       } else {
-                        setExpandedItems([]);
+                        setExpandedIds(new Set());
                       }
                     }}
                   />
@@ -442,21 +466,18 @@ export default function Recommendations() {
                     variant="icon"
                     ariaLabel="Unfold one level"
                     onClick={() => {
-                      const expandedIds = new Set(expandedItems.map((r) => r.id));
                       const topLevelExpandable = consolidatedRows.filter(
-                        (r) => r.level === "industryGroup" && consolidatedRows.some((c) => c.parentId === r.id)
+                        (r) => r.level === "industryGroup" && childrenMap.has(r.id)
                       );
                       const topAllExpanded = topLevelExpandable.every((r) => expandedIds.has(r.id));
 
                       if (!topAllExpanded) {
-                        // First expand top level (groups)
-                        setExpandedItems(topLevelExpandable);
+                        setExpandedIds(new Set(topLevelExpandable.map((r) => r.id)));
                       } else {
-                        // Then expand all (including sub-industries)
                         const allExpandable = consolidatedRows.filter((r) =>
-                          consolidatedRows.some((c) => c.parentId === r.id)
+                          childrenMap.has(r.id)
                         );
-                        setExpandedItems(allExpandable);
+                        setExpandedIds(new Set(allExpandable.map((r) => r.id)));
                       }
                     }}
                   />
@@ -472,16 +493,20 @@ export default function Recommendations() {
                 items={topLevelRows}
                 variant="embedded" wrapLines
                 expandableRows={{
-                  getItemChildren: (item) => consolidatedRows.filter((r) => r.parentId === item.id),
-                  isItemExpandable: (item) => consolidatedRows.some((r) => r.parentId === item.id),
+                  getItemChildren: (item) => childrenMap.get(item.id) ?? [],
+                  isItemExpandable: (item) => childrenMap.has(item.id),
                   expandedItems,
                   onExpandableItemToggle: ({ detail }) => {
                     const item = detail.item;
-                    setExpandedItems((prev) =>
-                      detail.expanded
-                        ? [...prev, item]
-                        : prev.filter((r) => r.id !== item.id)
-                    );
+                    setExpandedIds((prev) => {
+                      const next = new Set(prev);
+                      if (detail.expanded) {
+                        next.add(item.id);
+                      } else {
+                        next.delete(item.id);
+                      }
+                      return next;
+                    });
                   },
                 }}
                 trackBy="id"
