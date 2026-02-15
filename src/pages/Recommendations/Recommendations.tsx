@@ -351,21 +351,21 @@ export default function Recommendations() {
                 <SpaceBetween direction="horizontal" size="xxs">
                   <Button
                     iconName="treeview-collapse"
+                    variant="icon"
+                    ariaLabel="Fold all"
                     onClick={() => setExpandedItems([])}
-                  >
-                    Fold
-                  </Button>
+                  />
                   <Button
                     iconName="treeview-expand"
+                    variant="icon"
+                    ariaLabel="Unfold all"
                     onClick={() => {
                       const allExpandable = consolidatedRows.filter((r) =>
                         consolidatedRows.some((c) => c.parentId === r.id)
                       );
                       setExpandedItems(allExpandable);
                     }}
-                  >
-                    Unfold
-                  </Button>
+                  />
                 </SpaceBetween>
               )}
             </div>
