@@ -206,7 +206,7 @@ export default function Recommendations() {
           name: SUB_INDUSTRIES[si.key].name,
           votes: si.votes,
           parentId: igId,
-          url: industryUrls.get(SUB_INDUSTRIES[si.key].name),
+          url: undefined,
         });
 
         // Stocks under this sub-industry
