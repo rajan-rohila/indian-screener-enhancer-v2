@@ -233,7 +233,6 @@ export default function Recommendations() {
     [consolidatedRows]
   );
 
-  const showIndustryGroupTable = !selectedGroup;
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
   const NAME_WIDTH = 300;
@@ -469,7 +468,7 @@ export default function Recommendations() {
               />
             ) : (
               <SpaceBetween size="l">
-                {showIndustryGroupTable && sortedFilteredTree.industryGroups.length > 0 && (
+                {sortedFilteredTree.industryGroups.length > 0 && (
                   <ExpandableSection
                     expanded={igExpanded}
                     onChange={({ detail }) => setIgExpanded(detail.expanded)}
