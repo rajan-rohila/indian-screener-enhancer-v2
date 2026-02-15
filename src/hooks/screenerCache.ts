@@ -1,8 +1,31 @@
 import type { IndustryData } from "../types/screener";
+import { CACHE_TTL_DAYS } from "../constants/screenerConfig";
+
+const LS_KEY = "screener_market_cache";
+const TTL_MS = CACHE_TTL_DAYS * 24 * 60 * 60 * 1000;
 
 // Shared in-memory cache for screener data — persists across components within a session
 let cachedData: IndustryData[] | null = null;
 let fetchPromise: Promise<IndustryData[]> | null = null;
+
+// Hydrate from localStorage on module load
+try {
+  const raw = localStorage.getItem(LS_KEY);
+  if (raw) {
+    const { ts, data } = JSON.parse(raw) as { ts: number; data: IndustryData[] };
+    if (Date.now() - ts < TTL_MS) {
+      cachedData = data;
+    } else {
+      localStorage.removeItem(LS_KEY);
+    }
+  }
+} catch { /* ignore */ }
+
+function saveToStorage(data: IndustryData[]) {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch { /* quota exceeded etc */ }
+}
 
 function parseHtml(html: string): IndustryData[] {
   const doc = new DOMParser().parseFromString(html, "text/html");
@@ -43,6 +66,7 @@ export function getScreenerData(): Promise<IndustryData[]> {
       })
       .then((html) => {
         cachedData = parseHtml(html);
+        saveToStorage(cachedData);
         return cachedData;
       })
       .catch((err) => {
