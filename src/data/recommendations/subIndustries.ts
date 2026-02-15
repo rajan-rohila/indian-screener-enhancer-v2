@@ -16,6 +16,9 @@ export const INDUSTRY_GROUP_RECS: Record<AnalystKey, IndustryGroupRec[]> = {
     { subIndustry: SubIndustryKey.HEAVY_ELECTRICAL, thesis: "Capital goods benefit from Make in India theme promoted by trade deal" },
     { subIndustry: SubIndustryKey.TEA_COFFEE, thesis: "Spices, tea and coffee benefit from trade deal tariff reductions" },
     { subIndustry: SubIndustryKey.AEROSPACE_DEFENSE, thesis: "Aircraft parts and machinery components benefit from trade deal" },
+    { subIndustry: SubIndustryKey.HOUSEHOLD_APPLIANCES, thesis: "Prolonged warm summer benefits AC and cooler manufacturers, GST cuts and lower copper prices add tailwind" },
+    { subIndustry: SubIndustryKey.OTHER_ELECTRICAL, thesis: "Electrical equipment companies benefit from summer demand and Make in India theme" },
+    { subIndustry: SubIndustryKey.OTHER_BEVERAGES, thesis: "Beverage companies benefit from prolonged warm summer, safest summer play" },
   ],
   [AnalystKey.KEDIA]: [
     { subIndustry: SubIndustryKey.CIVIL_CONSTRUCTION, thesis: "Infrastructure stocks significantly declined from highs, crucial for India's economic growth - good time for selective buying" },

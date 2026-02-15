@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Container,
   Box,
@@ -232,6 +232,16 @@ export default function Recommendations() {
     () => consolidatedRows.filter((r) => r.parentId === null),
     [consolidatedRows]
   );
+
+  // Auto-expand all in consolidated mode
+  useEffect(() => {
+    if (consolidated) {
+      const allExpandable = consolidatedRows.filter((r) =>
+        consolidatedRows.some((c) => c.parentId === r.id)
+      );
+      setExpandedItems(allExpandable);
+    }
+  }, [consolidatedRows, consolidated]);
 
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
