@@ -18,6 +18,27 @@ export enum IndustryGroupKey {
   DEFENSE = "DEFENSE",
 }
 
+/** Canonical display order — matches the Screener sidebar grouping. */
+export const INDUSTRY_GROUP_ORDER: IndustryGroupKey[] = [
+  IndustryGroupKey.FINANCIAL,
+  IndustryGroupKey.INSURANCE,
+  IndustryGroupKey.METALS,
+  IndustryGroupKey.ENERGY,
+  IndustryGroupKey.CHEMICALS,
+  IndustryGroupKey.INDUSTRIAL,
+  IndustryGroupKey.AUTO,
+  IndustryGroupKey.INFRASTRUCTURE,
+  IndustryGroupKey.CONSTRUCTION,
+  IndustryGroupKey.CONSUMER,
+  IndustryGroupKey.FB,
+  IndustryGroupKey.TEXTILE,
+  IndustryGroupKey.CRAFT_TYPE,
+  IndustryGroupKey.MEDIA,
+  IndustryGroupKey.HEALTHCARE,
+  IndustryGroupKey.TECH,
+  IndustryGroupKey.DEFENSE,
+];
+
 interface IndustryGroupInfo {
   name: string;
 }

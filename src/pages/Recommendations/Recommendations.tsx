@@ -13,7 +13,7 @@ import {
 } from "@cloudscape-design/components";
 import type { SideNavigationProps, TableProps } from "@cloudscape-design/components";
 import { AnalystKey, ANALYSTS } from "../../constants/people/analysts";
-import { IndustryGroupKey, INDUSTRY_GROUPS } from "../../constants/industry/industryGroups";
+import { IndustryGroupKey, INDUSTRY_GROUPS, INDUSTRY_GROUP_ORDER } from "../../constants/industry/industryGroups";
 import { SUB_INDUSTRIES, SubIndustryKey } from "../../constants/industry/subIndustries";
 import { STOCKS, StockKey } from "../../constants/industry/stocks";
 import { INDUSTRY_TREE } from "../../constants/industry/industryTree";
@@ -130,7 +130,10 @@ export default function Recommendations() {
     const groups = stocksOnly
       ? tree.industryGroups.filter((ig) => groupsWithStocks.has(ig.key))
       : tree.industryGroups;
-    const links: SideNavigationProps.Item[] = groups.map((ig) => ({
+    const sorted = [...groups].sort(
+      (a, b) => INDUSTRY_GROUP_ORDER.indexOf(a.key) - INDUSTRY_GROUP_ORDER.indexOf(b.key)
+    );
+    const links: SideNavigationProps.Item[] = sorted.map((ig) => ({
       type: "link" as const,
       text: INDUSTRY_GROUPS[ig.key].name,
       href: `#${ig.key}`,
@@ -275,11 +278,13 @@ export default function Recommendations() {
 
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
+  const NUM_WIDTH = 40;
   const NAME_WIDTH = 300;
   const PE_WIDTH = 80;
   const VOTES_WIDTH = 80;
 
   const igColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.industryGroups[0]>[] = [
+    { id: "num", header: "#", cell: (item) => sortedFilteredTree.industryGroups.indexOf(item) + 1, width: NUM_WIDTH, minWidth: NUM_WIDTH },
     { id: "name", header: "Name", cell: (item) => INDUSTRY_GROUPS[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
     { id: "pe", header: "~P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
@@ -287,6 +292,7 @@ export default function Recommendations() {
   ];
 
   const siColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.subIndustries[0]>[] = [
+    { id: "num", header: "#", cell: (item) => sortedFilteredTree.subIndustries.indexOf(item) + 1, width: NUM_WIDTH, minWidth: NUM_WIDTH },
     { id: "name", header: "Name", cell: (item) => {
       const name = SUB_INDUSTRIES[item.key].name;
       const url = industryUrls.get(name);
@@ -298,6 +304,7 @@ export default function Recommendations() {
   ];
 
   const stColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.stocks[0]>[] = [
+    { id: "num", header: "#", cell: (item) => sortedFilteredTree.stocks.indexOf(item) + 1, width: NUM_WIDTH, minWidth: NUM_WIDTH },
     { id: "name", header: "Name", cell: (item) => {
       const stock = STOCKS[item.key];
       return stock.screenerUrl ? <Link href={stock.screenerUrl} external>{stock.name}</Link> : <>{stock.name}</>;
