@@ -64,7 +64,6 @@ export default function App() {
               navigate(event.detail.href);
             }}
             items={[
-              { type: "link", text: "Home", href: "/" },
               { type: "link", text: "Screener", href: "/screener" },
               { type: "link", text: "Recommendations", href: "/recommendations" },
             ]}
