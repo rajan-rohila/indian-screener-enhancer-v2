@@ -285,7 +285,7 @@ export default function Recommendations() {
     }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
     { id: "pe", header: "P/E", cell: (item) => {
       const sd = stockData.get(item.key as StockKey);
-      return sd?.pe ?? null;
+      return sd?.pe ? Math.round(parseFloat(sd.pe)).toString() : null;
     }, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
@@ -313,7 +313,7 @@ export default function Recommendations() {
       cell: (item) => {
         if (item.level !== "stock" || !item.stockKey) return null;
         const sd = stockData.get(item.stockKey);
-        return sd?.pe ?? null;
+        return sd?.pe ? Math.round(parseFloat(sd.pe)).toString() : null;
       },
     },
     {
