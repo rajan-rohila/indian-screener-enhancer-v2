@@ -457,7 +457,18 @@ export default function Recommendations() {
             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
               <Toggle
                 checked={consolidated}
-                onChange={({ detail }) => { setConsolidated(detail.checked); setExpandedIds(new Set()); }}
+                onChange={({ detail }) => {
+                  setConsolidated(detail.checked);
+                  if (detail.checked) {
+                    // Default expand all levels so stocks are visible
+                    const allExpandableIds = consolidatedRows
+                      .filter((r) => childrenMap.has(r.id))
+                      .map((r) => r.id);
+                    setExpandedIds(new Set(allExpandableIds));
+                  } else {
+                    setExpandedIds(new Set());
+                  }
+                }}
               >
                 Consolidate
               </Toggle>
