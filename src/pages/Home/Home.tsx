@@ -37,7 +37,7 @@ export default function Home() {
 
   return (
     <SpaceBetween size="l">
-      <Container header={<Header variant="h2">Indian Screener Enhancer</Header>}>
+      <Container header={<Header variant="h2">Rajan's Screener</Header>}>
         <SpaceBetween size="s">
           <Box>
             A tool for browsing and analyzing Indian stock market industries using data from screener.in.
