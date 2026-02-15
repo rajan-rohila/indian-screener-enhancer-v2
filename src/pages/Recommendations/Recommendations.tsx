@@ -60,9 +60,9 @@ export default function Recommendations() {
   const [selectedAnalysts, setSelectedAnalysts] = useState<AnalystKey[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<IndustryGroupKey | null>(null);
   const [consolidated, setConsolidated] = useState(false);
-  const [stocksOnly, setStocksOnly] = useState(false);
-  const [igExpanded, setIgExpanded] = useState(true);
-  const [siExpanded, setSiExpanded] = useState(true);
+  const [stocksOnly, setStocksOnly] = useState(true);
+  const [igExpanded, setIgExpanded] = useState(false);
+  const [siExpanded, setSiExpanded] = useState(false);
   const [stExpanded, setStExpanded] = useState(true);
   const [expandedItems, setExpandedItems] = useState<ConsolidatedRow[]>([]);
 
