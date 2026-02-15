@@ -4,20 +4,21 @@ import {
   Box,
   Icon,
   Table,
-  Header,
   SpaceBetween,
   SideNavigation,
   Button,
   Link,
   Toggle,
+  ExpandableSection,
 } from "@cloudscape-design/components";
 import type { SideNavigationProps, TableProps } from "@cloudscape-design/components";
 import { AnalystKey, ANALYSTS } from "../../constants/people/analysts";
 import { IndustryGroupKey, INDUSTRY_GROUPS } from "../../constants/industry/industryGroups";
 import { SUB_INDUSTRIES, SubIndustryKey } from "../../constants/industry/subIndustries";
-import { STOCKS } from "../../constants/industry/stocks";
+import { STOCKS, StockKey } from "../../constants/industry/stocks";
 import { INDUSTRY_TREE } from "../../constants/industry/industryTree";
 import { buildTree, type Vote } from "../../data/recommendations/recommendationTree";
+import { useStockData } from "../../hooks/useStockData";
 import harnoorImg from "../../assets/people/analysts/harnoor.png";
 import kediaImg from "../../assets/people/analysts/kedia.png";
 
@@ -52,17 +53,28 @@ interface ConsolidatedRow {
   votes: Vote[];
   parentId: string | null;
   url?: string;
+  stockKey?: StockKey;
 }
 
 export default function Recommendations() {
   const [selectedAnalysts, setSelectedAnalysts] = useState<AnalystKey[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<IndustryGroupKey | null>(null);
-  const [consolidated, setConsolidated] = useState(true);
+  const [consolidated, setConsolidated] = useState(false);
   const [stocksOnly, setStocksOnly] = useState(false);
+  const [igExpanded, setIgExpanded] = useState(true);
+  const [siExpanded, setSiExpanded] = useState(true);
+  const [stExpanded, setStExpanded] = useState(true);
   const [expandedItems, setExpandedItems] = useState<ConsolidatedRow[]>([]);
 
   // Always build full tree for aggregate vote counts
   const fullTree = useMemo(() => buildTree(), []);
+
+  // Get all stock keys from the tree for background fetching
+  const allStockKeys = useMemo(
+    () => fullTree.stocks.map((st) => st.key as StockKey),
+    [fullTree]
+  );
+  const stockData = useStockData(allStockKeys);
 
   // Filter rows to only those where selected analyst has a vote, but keep all votes
   const tree = useMemo(() => {
@@ -144,11 +156,32 @@ export default function Recommendations() {
     };
   }, [tree, selectedGroup, stocksOnly]);
 
+  // Sort stocks: most votes first, then lowest PE
+  const sortedFilteredTree = useMemo(() => {
+    const getPe = (key: string) => {
+      const sd = stockData.get(key as StockKey);
+      return sd?.pe ? parseFloat(sd.pe) : Infinity;
+    };
+
+    const sortByVotesThenPe = <T extends { votes: Vote[]; key: string }>(items: T[]) =>
+      [...items].sort((a, b) => {
+        const voteDiff = b.votes.length - a.votes.length;
+        if (voteDiff !== 0) return voteDiff;
+        return getPe(a.key) - getPe(b.key);
+      });
+
+    return {
+      industryGroups: [...filteredTree.industryGroups].sort((a, b) => b.votes.length - a.votes.length),
+      subIndustries: [...filteredTree.subIndustries].sort((a, b) => b.votes.length - a.votes.length),
+      stocks: sortByVotesThenPe(filteredTree.stocks),
+    };
+  }, [filteredTree, stockData]);
+
   // Build consolidated rows
   const consolidatedRows = useMemo((): ConsolidatedRow[] => {
     const rows: ConsolidatedRow[] = [];
 
-    for (const ig of filteredTree.industryGroups) {
+    for (const ig of sortedFilteredTree.industryGroups) {
       const igId = `ig-${ig.key}`;
       rows.push({
         id: igId,
@@ -161,7 +194,7 @@ export default function Recommendations() {
       // Sub-industries under this group
       const groupIndustries = INDUSTRY_TREE[ig.key] ?? {};
       const allSubKeys = Object.values(groupIndustries).flat() as SubIndustryKey[];
-      const matchingSubs = filteredTree.subIndustries.filter((si) => allSubKeys.includes(si.key));
+      const matchingSubs = sortedFilteredTree.subIndustries.filter((si) => allSubKeys.includes(si.key));
 
       for (const si of matchingSubs) {
         const siId = `si-${si.key}`;
@@ -174,7 +207,7 @@ export default function Recommendations() {
         });
 
         // Stocks under this sub-industry
-        const matchingStocks = filteredTree.stocks.filter((st) => STOCKS[st.key].subIndustry === si.key);
+        const matchingStocks = sortedFilteredTree.stocks.filter((st) => STOCKS[st.key].subIndustry === si.key);
         for (const st of matchingStocks) {
           rows.push({
             id: `st-${st.key}`,
@@ -183,13 +216,14 @@ export default function Recommendations() {
             votes: st.votes,
             parentId: siId,
             url: STOCKS[st.key].screenerUrl,
+            stockKey: st.key as StockKey,
           });
         }
       }
     }
 
     return rows;
-  }, [filteredTree]);
+  }, [sortedFilteredTree]);
 
   const topLevelRows = useMemo(
     () => consolidatedRows.filter((r) => r.parentId === null),
@@ -200,22 +234,32 @@ export default function Recommendations() {
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
   const NAME_WIDTH = 300;
-  const VOTES_WIDTH = 60;
+  const PE_WIDTH = 80;
+  const VOTES_WIDTH = 80;
 
-  const igColumns: TableProps.ColumnDefinition<typeof filteredTree.industryGroups[0]>[] = [
-    { id: "name", header: "Industry Group", cell: (item) => INDUSTRY_GROUPS[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+  const igColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.industryGroups[0]>[] = [
+    { id: "name", header: "Name", cell: (item) => INDUSTRY_GROUPS[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+    { id: "pe", header: "P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
   ];
 
-  const siColumns: TableProps.ColumnDefinition<typeof filteredTree.subIndustries[0]>[] = [
-    { id: "name", header: "Sub-Industry", cell: (item) => SUB_INDUSTRIES[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+  const siColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.subIndustries[0]>[] = [
+    { id: "name", header: "Name", cell: (item) => SUB_INDUSTRIES[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+    { id: "pe", header: "P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
   ];
 
-  const stColumns: TableProps.ColumnDefinition<typeof filteredTree.stocks[0]>[] = [
-    { id: "name", header: "Stock", cell: (item) => STOCKS[item.key].screenerUrl ? <Link href={STOCKS[item.key].screenerUrl} external>{STOCKS[item.key].name}</Link> : STOCKS[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+  const stColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.stocks[0]>[] = [
+    { id: "name", header: "Name", cell: (item) => {
+      const stock = STOCKS[item.key];
+      return stock.screenerUrl ? <Link href={stock.screenerUrl} external>{stock.name}</Link> : <>{stock.name}</>;
+    }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+    { id: "pe", header: "P/E", cell: (item) => {
+      const sd = stockData.get(item.key as StockKey);
+      return sd?.pe ?? null;
+    }, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
   ];
@@ -226,10 +270,24 @@ export default function Recommendations() {
       header: "Name",
       cell: (item) => {
         const label = <Box fontWeight={item.level === "industryGroup" ? "bold" : "normal"}>{item.name}</Box>;
-        return item.url ? <Link href={item.url} external>{item.name}</Link> : label;
+        if (item.url) {
+          return <Link href={item.url} external>{item.name}</Link>;
+        }
+        return label;
       },
       width: NAME_WIDTH,
       minWidth: NAME_WIDTH,
+    },
+    {
+      id: "pe",
+      header: "P/E",
+      width: PE_WIDTH,
+      minWidth: PE_WIDTH,
+      cell: (item) => {
+        if (item.level !== "stock" || !item.stockKey) return null;
+        const sd = stockData.get(item.stockKey);
+        return sd?.pe ?? null;
+      },
     },
     {
       id: "votes",
@@ -283,7 +341,17 @@ export default function Recommendations() {
           <div style={{ padding: "4px 16px" }}>
             <Toggle
               checked={stocksOnly}
-              onChange={({ detail }) => setStocksOnly(detail.checked)}
+              onChange={({ detail }) => {
+                setStocksOnly(detail.checked);
+                if (detail.checked) {
+                  setIgExpanded(false);
+                  setSiExpanded(false);
+                  setStExpanded(true);
+                } else {
+                  setIgExpanded(true);
+                  setSiExpanded(true);
+                }
+              }}
             >
               Stocks only
             </Toggle>
@@ -394,29 +462,44 @@ export default function Recommendations() {
               />
             ) : (
               <SpaceBetween size="l">
-                {showIndustryGroupTable && filteredTree.industryGroups.length > 0 && (
-                  <Table
-                    columnDefinitions={igColumns}
-                    items={filteredTree.industryGroups}
-                    header={<Header variant="h3" counter={`(${filteredTree.industryGroups.length})`}>Industry Groups</Header>}
-                    variant="embedded" wrapLines
-                  />
+                {showIndustryGroupTable && sortedFilteredTree.industryGroups.length > 0 && (
+                  <ExpandableSection
+                    expanded={igExpanded}
+                    onChange={({ detail }) => setIgExpanded(detail.expanded)}
+                    headerText={`Industry Groups (${sortedFilteredTree.industryGroups.length})`}
+                  >
+                    <Table
+                      columnDefinitions={igColumns}
+                      items={sortedFilteredTree.industryGroups}
+                      variant="embedded" wrapLines
+                    />
+                  </ExpandableSection>
                 )}
-                {filteredTree.subIndustries.length > 0 && (
-                  <Table
-                    columnDefinitions={siColumns}
-                    items={filteredTree.subIndustries}
-                    header={<Header variant="h3" counter={`(${filteredTree.subIndustries.length})`}>Sub-Industries</Header>}
-                    variant="embedded" wrapLines
-                  />
+                {sortedFilteredTree.subIndustries.length > 0 && (
+                  <ExpandableSection
+                    expanded={siExpanded}
+                    onChange={({ detail }) => setSiExpanded(detail.expanded)}
+                    headerText={`Sub-Industries (${sortedFilteredTree.subIndustries.length})`}
+                  >
+                    <Table
+                      columnDefinitions={siColumns}
+                      items={sortedFilteredTree.subIndustries}
+                      variant="embedded" wrapLines
+                    />
+                  </ExpandableSection>
                 )}
-                {filteredTree.stocks.length > 0 && (
-                  <Table
-                    columnDefinitions={stColumns}
-                    items={filteredTree.stocks}
-                    header={<Header variant="h3" counter={`(${filteredTree.stocks.length})`}>Stocks</Header>}
-                    variant="embedded" wrapLines
-                  />
+                {sortedFilteredTree.stocks.length > 0 && (
+                  <ExpandableSection
+                    expanded={stExpanded}
+                    onChange={({ detail }) => setStExpanded(detail.expanded)}
+                    headerText={`Stocks (${sortedFilteredTree.stocks.length})`}
+                  >
+                    <Table
+                      columnDefinitions={stColumns}
+                      items={sortedFilteredTree.stocks}
+                      variant="embedded" wrapLines
+                    />
+                  </ExpandableSection>
                 )}
               </SpaceBetween>
             )}
