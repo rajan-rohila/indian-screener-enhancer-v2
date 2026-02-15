@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   Container,
   Box,
@@ -233,16 +233,6 @@ export default function Recommendations() {
     [consolidatedRows]
   );
 
-  // Auto-expand all in consolidated mode
-  useEffect(() => {
-    if (consolidated) {
-      const allExpandable = consolidatedRows.filter((r) =>
-        consolidatedRows.some((c) => c.parentId === r.id)
-      );
-      setExpandedItems(allExpandable);
-    }
-  }, [consolidatedRows, consolidated]);
-
   const filterAnalyst = selectedAnalysts.length === 1 ? selectedAnalysts[0] : undefined;
 
   const NAME_WIDTH = 300;
@@ -436,18 +426,38 @@ export default function Recommendations() {
                   <Button
                     iconName="treeview-collapse"
                     variant="icon"
-                    ariaLabel="Fold all"
-                    onClick={() => setExpandedItems([])}
+                    ariaLabel="Fold one level"
+                    onClick={() => {
+                      // First collapse deepest level (sub-industries), then top level (groups)
+                      const expandedSubIndustries = expandedItems.filter((r) => r.level === "subIndustry");
+                      if (expandedSubIndustries.length > 0) {
+                        setExpandedItems(expandedItems.filter((r) => r.level !== "subIndustry"));
+                      } else {
+                        setExpandedItems([]);
+                      }
+                    }}
                   />
                   <Button
                     iconName="treeview-expand"
                     variant="icon"
-                    ariaLabel="Unfold all"
+                    ariaLabel="Unfold one level"
                     onClick={() => {
-                      const allExpandable = consolidatedRows.filter((r) =>
-                        consolidatedRows.some((c) => c.parentId === r.id)
+                      const expandedIds = new Set(expandedItems.map((r) => r.id));
+                      const topLevelExpandable = consolidatedRows.filter(
+                        (r) => r.level === "industryGroup" && consolidatedRows.some((c) => c.parentId === r.id)
                       );
-                      setExpandedItems(allExpandable);
+                      const topAllExpanded = topLevelExpandable.every((r) => expandedIds.has(r.id));
+
+                      if (!topAllExpanded) {
+                        // First expand top level (groups)
+                        setExpandedItems(topLevelExpandable);
+                      } else {
+                        // Then expand all (including sub-industries)
+                        const allExpandable = consolidatedRows.filter((r) =>
+                          consolidatedRows.some((c) => c.parentId === r.id)
+                        );
+                        setExpandedItems(allExpandable);
+                      }
                     }}
                   />
                 </SpaceBetween>

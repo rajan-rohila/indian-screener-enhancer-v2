@@ -51,9 +51,9 @@ export const STOCKS: Record<StockKey, StockInfo> = {
   [StockKey.AZAD]: {
     name: "Azad Engineering",
     screenerUrl: "https://www.screener.in/company/AZAD/",
-    subIndustry: SubIndustryKey.AEROSPACE_DEFENSE,
-    industry: IndustryKey.DEFENSE_OTHER,
-    industryGroup: IndustryGroupKey.DEFENSE,
+    subIndustry: SubIndustryKey.HEAVY_ELECTRICAL,
+    industry: IndustryKey.ELECTRICAL,
+    industryGroup: IndustryGroupKey.INDUSTRIAL,
   },
   [StockKey.SONACOMS]: {
     name: "Sona BLW",
@@ -79,9 +79,9 @@ export const STOCKS: Record<StockKey, StockInfo> = {
   [StockKey.HAVELLS]: {
     name: "Havells",
     screenerUrl: "https://www.screener.in/company/HAVELLS/",
-    subIndustry: SubIndustryKey.OTHER_ELECTRICAL,
-    industry: IndustryKey.ELECTRICAL,
-    industryGroup: IndustryGroupKey.INDUSTRIAL,
+    subIndustry: SubIndustryKey.CONSUMER_ELECTRONICS,
+    industry: IndustryKey.DURABLES,
+    industryGroup: IndustryGroupKey.CONSUMER,
   },
   [StockKey.EPACK]: {
     name: "Epack Durable",
