@@ -19,6 +19,7 @@ import { STOCKS, StockKey } from "../../constants/industry/stocks";
 import { INDUSTRY_TREE } from "../../constants/industry/industryTree";
 import { buildTree, type Vote } from "../../data/recommendations/recommendationTree";
 import { useStockData } from "../../hooks/useStockData";
+import { useIndustryUrls } from "../../hooks/useIndustryUrls";
 import harnoorImg from "../../assets/people/analysts/harnoor.png";
 import kediaImg from "../../assets/people/analysts/kedia.png";
 
@@ -75,6 +76,7 @@ export default function Recommendations() {
     [fullTree]
   );
   const stockData = useStockData(allStockKeys);
+  const industryUrls = useIndustryUrls();
 
   // Filter rows to only those where selected analyst has a vote, but keep all votes
   const tree = useMemo(() => {
@@ -204,6 +206,7 @@ export default function Recommendations() {
           name: SUB_INDUSTRIES[si.key].name,
           votes: si.votes,
           parentId: igId,
+          url: industryUrls.get(SUB_INDUSTRIES[si.key].name),
         });
 
         // Stocks under this sub-industry
@@ -223,7 +226,7 @@ export default function Recommendations() {
     }
 
     return rows;
-  }, [sortedFilteredTree]);
+  }, [sortedFilteredTree, industryUrls]);
 
   const topLevelRows = useMemo(
     () => consolidatedRows.filter((r) => r.parentId === null),
@@ -245,7 +248,11 @@ export default function Recommendations() {
   ];
 
   const siColumns: TableProps.ColumnDefinition<typeof sortedFilteredTree.subIndustries[0]>[] = [
-    { id: "name", header: "Name", cell: (item) => SUB_INDUSTRIES[item.key].name, width: NAME_WIDTH, minWidth: NAME_WIDTH },
+    { id: "name", header: "Name", cell: (item) => {
+      const name = SUB_INDUSTRIES[item.key].name;
+      const url = industryUrls.get(name);
+      return url ? <Link href={url} external>{name}</Link> : <>{name}</>;
+    }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
     { id: "pe", header: "P/E", cell: () => null, width: PE_WIDTH, minWidth: PE_WIDTH },
     { id: "votes", header: "Votes", cell: (item) => item.votes.length, width: VOTES_WIDTH, minWidth: VOTES_WIDTH },
     { id: "thesis", header: "Thesis", cell: (item) => <ThesisCell votes={item.votes} filterAnalyst={filterAnalyst} /> },
@@ -327,7 +334,7 @@ export default function Recommendations() {
             <Button
               iconName="filter"
               disabled={selectedAnalysts.length === 0 && selectedGroup === null && !stocksOnly}
-              onClick={() => { setSelectedAnalysts([]); setSelectedGroup(null); setStocksOnly(false); }}
+              onClick={() => { setSelectedAnalysts([]); setSelectedGroup(null); setStocksOnly(false); setIgExpanded(true); setSiExpanded(true); setStExpanded(true); }}
             >
               Clear
             </Button>
@@ -371,7 +378,7 @@ export default function Recommendations() {
                 onClick={() => toggleAnalyst(key)}
                 style={{
                   cursor: "pointer",
-                  opacity: selectedAnalysts.length === 0 || selectedAnalysts.includes(key) ? 1 : 0.3,
+                  opacity: selectedAnalysts.length === 0 || selectedAnalysts.includes(key) ? 1 : 0.6,
                   transition: "opacity 0.2s",
                 }}
                 title={ANALYSTS[key].name}
