@@ -43,3 +43,24 @@
   fill: #ffffff;
   text-decoration: none;
 }
+
+/* Stock journal hover button */
+.stock-name-cell .journal-btn {
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.stock-name-cell:hover .journal-btn {
+  opacity: 1;
+}
+.journal-btn button,
+.journal-btn [class*="button"] {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.journal-btn *:focus,
+.journal-btn *:focus-visible,
+.journal-btn *:focus-within {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: inherit !important;
+}

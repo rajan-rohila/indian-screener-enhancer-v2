@@ -22,6 +22,8 @@ import { useStockData } from "../../hooks/useStockData";
 import { useIndustryUrls } from "../../hooks/useIndustryUrls";
 import harnoorImg from "../../assets/people/analysts/harnoor.png";
 import kediaImg from "../../assets/people/analysts/kedia.png";
+import StockDetailModal from "../../components/StockDetailModal";
+import { hasJournal } from "../../data/stockJournals";
 
 const ANALYST_IMAGES: Record<AnalystKey, string> = {
   [AnalystKey.HARNOOR]: harnoorImg,
@@ -79,6 +81,7 @@ interface ConsolidatedRow {
 export default function Recommendations() {
   const [selectedAnalysts, setSelectedAnalysts] = useState<AnalystKey[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<IndustryGroupKey | null>(null);
+  const [modalStock, setModalStock] = useState<StockKey | null>(null);
   const [consolidated, setConsolidated] = useState(false);
   const [stocksOnly, setStocksOnly] = useState(true);
   const [igExpanded, setIgExpanded] = useState(false);
@@ -307,7 +310,21 @@ export default function Recommendations() {
     { id: "num", header: "#", cell: (item) => sortedFilteredTree.stocks.indexOf(item) + 1, width: NUM_WIDTH, minWidth: NUM_WIDTH },
     { id: "name", header: "Name", cell: (item) => {
       const stock = STOCKS[item.key];
-      return stock.screenerUrl ? <Link href={stock.screenerUrl} external>{stock.name}</Link> : <>{stock.name}</>;
+      return (
+        <span className="stock-name-cell" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <Link href={stock.screenerUrl} external>{stock.name}</Link>
+          {hasJournal(item.key as StockKey) && (
+            <span className="journal-btn">
+              <Button
+                variant="normal"
+                onClick={() => setModalStock(item.key as StockKey)}
+              >
+                Open
+              </Button>
+            </span>
+          )}
+        </span>
+      );
     }, width: NAME_WIDTH, minWidth: NAME_WIDTH },
     { id: "pe", header: "~P/E", cell: (item) => {
       const sd = stockData.get(item.key as StockKey);
@@ -323,6 +340,23 @@ export default function Recommendations() {
       header: "Name",
       cell: (item) => {
         const label = <Box fontWeight={item.level === "industryGroup" ? "bold" : "normal"}>{item.name}</Box>;
+        if (item.level === "stock" && item.stockKey) {
+          return (
+            <span className="stock-name-cell" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <Link href={item.url} external>{item.name}</Link>
+              {hasJournal(item.stockKey) && (
+                <span className="journal-btn">
+                  <Button
+                    variant="normal"
+                    onClick={() => setModalStock(item.stockKey!)}
+                  >
+                    Open
+                  </Button>
+                </span>
+              )}
+            </span>
+          );
+        }
         if (item.url) {
           return <Link href={item.url} external>{item.name}</Link>;
         }
@@ -594,6 +628,7 @@ export default function Recommendations() {
           </div>
         </Container>
       </div>
+      <StockDetailModal stockKey={modalStock} onDismiss={() => { setModalStock(null); setTimeout(() => (document.activeElement as HTMLElement)?.blur(), 0); }} />
     </div>
   );
 }
